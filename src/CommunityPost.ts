@@ -1,4 +1,13 @@
-import { findValuesByKeys, ytInitialData, parseRawData, getLastItem, sanitizeUrl, mergeRuns, findActiveTab } from "./util";
+import { 
+    findValuesByKeys,  
+    parseRawData, 
+    getLastItem, 
+    sanitizeUrl, 
+    mergeRuns, 
+    findActiveTab 
+} from "./util";
+
+import type { ytInitialData } from "./util";
 
 export enum AttachmentType {
     Image = "IMAGE",
@@ -16,13 +25,13 @@ export interface CommunityPost {
 
     attachmentType: AttachmentType;
 
-    /* Only present if attachmentType is IMAGE */
+    /* Only present if attachmentType is `IMAGE` */
     images?: string[];
 
-    /* Only present if attachmentType is POLL */
+    /* Only present if attachmentType is `POLL` */
     choices?: string[];
 
-    /* Only present if attachmentType is VIDEO */
+    /* Only present if attachmentType is `VIDEO` */
     video?: {
         id: string;
         title: string;
@@ -46,6 +55,10 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         attachment?.pollRenderer ? AttachmentType.Poll :  
         attachment?.videoRenderer ? AttachmentType.Video : "INVALID"
     ) : AttachmentType.None;
+    
+    if (attachmentType === "INVALID") {
+        throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open a PR with this error!`);
+    }
 
     const images = (() => {
         if (attachmentType !== AttachmentType.Image) return undefined;
@@ -76,7 +89,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         const {videoId: id, thumbnail: thumbnails, title: titleRaw, descriptionSnippet: descriptionSnippetRaw} = attachment.videoRenderer;
 
 
-        // ? Is this even required? `https://i.ytimg.com/vi/[id]/maxresdefault.jpg` is a thing.
+        // ? Is this even required? https://i.ytimg.com/vi/[id]/maxresdefault.jpg is a thing.
         const thumbnail = sanitizeUrl(getLastItem(thumbnails.thumbnails).url);
         const title = mergeRuns(titleRaw.runs);
         const descriptionSnippet = mergeRuns(descriptionSnippetRaw.runs);
@@ -88,10 +101,6 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
             thumbnail
         }
     })();
-
-    if (attachmentType === "INVALID") {
-        throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open a PR with this error!`);
-    }
 
     const content: {text: string, url?: string}[] | undefined = text?.runs && text.runs.map(
         (run: any) => {
