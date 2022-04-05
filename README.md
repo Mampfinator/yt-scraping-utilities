@@ -46,6 +46,5 @@ import axios from "axios";
     )
 })();
 ```
-`findActiveTab` is a convenience method that finds entry in a `tabs` array where `tabRenderer.selected` is `true`.
 
 Advanced usage (for player responses). - coming soon to a README.md near you!

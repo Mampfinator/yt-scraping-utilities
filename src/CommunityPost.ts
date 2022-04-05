@@ -1,4 +1,4 @@
-import { findValuesByKeys, ytInitialData, parseRawData, getLastItem, sanitizeUrl, mergeRuns } from "./util";
+import { findValuesByKeys, ytInitialData, parseRawData, getLastItem, sanitizeUrl, mergeRuns, findActiveTab } from "./util";
 
 export enum AttachmentType {
     Image = "IMAGE",
@@ -37,7 +37,7 @@ const communityPostKeys = ["backstagePostRenderer"];
 /**
  * Extracts a simplified community post from a `backstagePostRenderer`.
  */
-function extractPost(rawPost: Record<string, any>): CommunityPost {
+export function extractPost(rawPost: Record<string, any>): CommunityPost {
     const {postId: id, contentText: text, backstageAttachment: attachment} = rawPost;
 
     const attachmentType = attachment ? (
@@ -93,8 +93,6 @@ function extractPost(rawPost: Record<string, any>): CommunityPost {
         throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open a PR with this error!`);
     }
 
-    // TODO: wrap into IIFE?
-    // let content: {text: string, url?: string}[] | undefined = undefined;
     const content: {text: string, url?: string}[] | undefined = text?.runs && text.runs.map(
         (run: any) => {
             const {text, navigationEndpoint} = run;
@@ -137,7 +135,7 @@ function extractPost(rawPost: Record<string, any>): CommunityPost {
 
 /**
  * Extracts community posts from a YouTube page or already parsed ytInitialData.
- * @param source - either parsed ytInitialData via parseRawData or raw page string from a community tab or post. Extracting from a string will always be faster.
+ * @param source - either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post. Extracting from a string will always be faster.
  */
 export function extractCommunityPosts(source: ytInitialData): CommunityPost[]
 export function extractCommunityPosts(source: string): CommunityPost[]
@@ -145,6 +143,7 @@ export function extractCommunityPosts(source: string | ytInitialData): Community
     const ytInitialData : ytInitialData = typeof source === "string" ? parseRawData({source, ytInitialData: true}).ytInitialData! : source;
     if (!ytInitialData) throw new TypeError(`No YT initial data in provided source!`);
     
-    const rawPosts = findValuesByKeys(ytInitialData, communityPostKeys);
+    // Slight optimization to skip unused tabs and meta tags.
+    const rawPosts = findValuesByKeys(findActiveTab(ytInitialData), communityPostKeys);
     return rawPosts.map(post => extractPost(post));
 }

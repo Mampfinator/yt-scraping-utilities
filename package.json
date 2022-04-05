@@ -2,6 +2,10 @@
   "name": "yt-scraping-utilities",
   "version": "0.1.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mampfinator/yt-scraping-utilities.git"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -9,8 +13,8 @@
     "publish": "np",
     "test": ""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["youtube", "scraping"],
+  "author": "Sir Eatsalot",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^17.0.23",
