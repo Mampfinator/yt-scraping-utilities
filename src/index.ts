@@ -1,6 +1,6 @@
 //TODO: export * from "./ChannelInfo";
 export * from "./CommunityPost";
-//TODO: export * from "./Video";
+export * from "./Video";
 
 export {
     initialDataRe as ytInitialDataRegex,
