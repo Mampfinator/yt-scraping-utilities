@@ -144,7 +144,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
 
 /**
  * Extracts community posts from a YouTube page or already parsed ytInitialData.
- * @param source - either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post. Extracting from a string will always be faster.
+ * @param source - either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post.
  */
 export function extractCommunityPosts(source: ytInitialData): CommunityPost[]
 export function extractCommunityPosts(source: string): CommunityPost[]
