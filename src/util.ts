@@ -3,11 +3,11 @@ export type ytInitialPlayerResponse = Record<string, any>
 /**
  * Tries to match ytInitialData variable on a YouTube page.
  */
-export const initialDataRe = /(?<=var ytInitialData \=).*(?=\;<\/script>)/;
+export const initialDataRe = /(?<=var ytInitialData *\= *)\{.*?}(?=\;)(?<![A-z<>])/;
 /**
  * Tries to match ytInitialPlayerResponse variable on a YouTube page.
  */
-export const playerResponseRe = /(?<=var ytInitialPlayerResponse \=).*(?=\;<\/script>)/;
+export const playerResponseRe = /(?<=var ytInitialPlayerResponse *\= *)\{.*?}(?=\;)(?<![A-z<>])/;
 
 
 interface ParseRawOptions {
@@ -99,3 +99,10 @@ export const sanitizeUrl = (url: string, offset = 0): string => {
  * Merges runs Arrays into a single text string.
  */
 export const mergeRuns = (runs: {text: string}[]) => runs.map(r => r.text).join("");
+
+export const isValidDate = (date: Date) => !isNaN(date.getTime());
+export const tryParseDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    if (!isValidDate(date)) return undefined;
+    return date;
+}
