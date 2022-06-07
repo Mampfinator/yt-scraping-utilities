@@ -1,7 +1,9 @@
 /src
 /node_modules
+/test
 .gitignore
 README.md
 package-lock.json
-test
 playground
+.mocharc.json
+tsconfig.json
