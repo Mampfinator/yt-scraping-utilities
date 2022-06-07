@@ -1,7 +1,5 @@
-import { getLastItem, isValidDate, mergeRuns, sanitizeUrl, tryParseDate, ytInitialPlayerResponse } from "./util";
-import {
-    parseRawData
-} from "./util";
+import { getLastItem, sanitizeUrl, tryParseDate, parseRawData } from "./util";
+import {ytInitialPlayerResponse } from "./youtube-types";
 
 export enum Playability {
     OK = "OK",
