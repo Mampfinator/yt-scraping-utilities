@@ -1,3 +1,4 @@
+import type { ytInitialData } from "./youtube-types";
 import { 
     findValuesByKeys,  
     parseRawData, 
@@ -7,13 +8,16 @@ import {
     findActiveTab 
 } from "./util";
 
-import type { ytInitialData } from "./util";
-
 export enum AttachmentType {
     Image = "IMAGE",
     Poll = "POLL",
     Video = "VIDEO",
-    None = "NONE"
+    None = "NONE",
+}
+
+export interface PollChoice {
+    text: string; 
+    imageUrl?: string;
 }
 
 export interface CommunityPost {
@@ -29,7 +33,7 @@ export interface CommunityPost {
     images?: string[];
 
     /* Only present if attachmentType is `POLL` */
-    choices?: string[];
+    choices?: PollChoice[];
 
     /* Only present if attachmentType is `VIDEO` */
     video?: {
@@ -38,16 +42,18 @@ export interface CommunityPost {
         descriptionSnippet: string;
         thumbnail: string;
     }
+
+    sharedPost?: CommunityPost;
 }
 
-// kept here for adjustments because I could swear there was something off about this at some point.
-const communityPostKeys = ["backstagePostRenderer"];
+// NOTE: the order here is important, otherwise the sharedPostRenderer and its original post would appear in separate results.
+const communityPostKeys = ["sharedPostRenderer", "backstagePostRenderer"];
 
 /**
  * Extracts a simplified community post from a `backstagePostRenderer`.
  */
 export function extractPost(rawPost: Record<string, any>): CommunityPost {
-    const {postId: id, contentText: text, backstageAttachment: attachment} = rawPost;
+    const {postId: id, contentText: text, backstageAttachment: attachment, originalPost} = rawPost;
 
     const attachmentType = attachment ? (
         attachment?.backstageImageRenderer ? AttachmentType.Image :
@@ -57,7 +63,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
     ) : AttachmentType.None;
     
     if (attachmentType === "INVALID") {
-        throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open a PR with this error!`);
+        throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open an issue with this error!`);
     }
 
     const images = (() => {
@@ -81,7 +87,19 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         return images;
     })();
 
-    const choices = attachmentType === AttachmentType.Poll && attachment.pollRenderer?.choices.map((choice: any) => mergeRuns(choice.text.runs));
+    const choices = (() => {
+        if (attachmentType !== AttachmentType.Poll || !attachment.pollRenderer) return;
+        const {choices: rawChoices} = attachment.pollRenderer;
+
+        // TODO: proper YouTube typings for easier development because ytInitialData is a mess.
+        return rawChoices.map((rawChoice: {text: Record<string, any>, image: Record<string, any>}): PollChoice => {
+            const text = mergeRuns(rawChoice.text.runs);
+            const choice: PollChoice = {text};
+            if (rawChoice.image) choice.imageUrl = sanitizeUrl(getLastItem(rawChoice.image.thumbnails).url);
+
+            return choice;
+        });
+    })();
 
     const video = (() => {
         if (attachmentType !== AttachmentType.Video) return;
@@ -119,7 +137,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
                     url = initialUrl.toString();
                 }
 
-                if (!url) throw new Error(`Could not find URL in ${JSON.stringify(navigationEndpoint)}! Please open a PR with this error message!`);
+                if (!url) throw new Error(`Could not find URL in ${JSON.stringify(navigationEndpoint)}! Please open an issue with this error message!`);
 
                 return {
                     text,
@@ -139,6 +157,8 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
     if (choices) post.choices = choices;
     if (video) post.video = video;
 
+    if (originalPost) post.sharedPost = extractPost(originalPost.backstagePostRenderer);
+
     return post;
 }
 
@@ -150,7 +170,7 @@ export function extractCommunityPosts(source: ytInitialData): CommunityPost[]
 export function extractCommunityPosts(source: string): CommunityPost[]
 export function extractCommunityPosts(source: string | ytInitialData): CommunityPost[] {
     const ytInitialData : ytInitialData = typeof source === "string" ? parseRawData({source, ytInitialData: true}).ytInitialData! : source;
-    if (!ytInitialData) throw new TypeError(`No YT initial data in provided source!`);
+    if (!ytInitialData) throw new TypeError(`No YT initial data in provided source: ${JSON.stringify(source)}`);
     
     // Slight optimization to skip unused tabs and meta tags.
     const rawPosts = findValuesByKeys(findActiveTab(ytInitialData), communityPostKeys);
