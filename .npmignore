@@ -1,6 +1,8 @@
 /src
 /node_modules
 /test
+/.nyc_output
+/coverage
 .gitignore
 README.md
 package-lock.json
