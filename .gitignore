@@ -1,3 +1,5 @@
 node_modules
 dist
 playground
+.nyc_output
+coverage
