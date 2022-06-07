@@ -1,5 +1,9 @@
-export type ytInitialData = Record<string, any>;
-export type ytInitialPlayerResponse = Record<string, any>
+import type {
+    ytInitialData, 
+    ytInitialPlayerResponse, 
+    YTInitialDataChannelTab
+} from "./youtube-types";
+
 /**
  * Tries to match ytInitialData variable on a YouTube page.
  */
@@ -50,7 +54,7 @@ export function parseRawData(options: ParseRawOptions) {
  */
 export function findActiveTab(ytInitialData: ytInitialData) {
     try {
-        return ytInitialData.contents.twoColumnBrowseResultsRenderer.tabs.find((tab: Record<string, any>) => tab.tabRenderer.selected)
+        return ytInitialData.contents.twoColumnBrowseResultsRenderer.tabs.find((tab: YTInitialDataChannelTab) => tab.tabRenderer.selected)
     } catch (error) {
         throw new Error(`Error accessing initial data: ${error}`);
     }
