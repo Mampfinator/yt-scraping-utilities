@@ -4,6 +4,7 @@
 /.nyc_output
 /coverage
 .gitignore
+.gitattributes
 README.md
 package-lock.json
 playground
