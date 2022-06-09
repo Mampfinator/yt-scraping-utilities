@@ -2,10 +2,9 @@ import type { ytInitialData } from "./youtube-types";
 import { 
     findValuesByKeys,  
     parseRawData, 
-    getLastItem, 
-    sanitizeUrl, 
     mergeRuns, 
-    findActiveTab 
+    findActiveTab, 
+    getThumbnail
 } from "./util";
 
 export enum AttachmentType {
@@ -50,39 +49,40 @@ export interface CommunityPost {
 const communityPostKeys = ["sharedPostRenderer", "backstagePostRenderer"];
 
 /**
- * Extracts a simplified community post from a `backstagePostRenderer`.
+ * Extracts a simplified community post from a `backstagePostRenderer` or a `sharedPostRenderer`.
  */
 export function extractPost(rawPost: Record<string, any>): CommunityPost {
     const {postId: id, contentText: text, backstageAttachment: attachment, originalPost} = rawPost;
 
-    const attachmentType = attachment ? (
-        attachment?.backstageImageRenderer ? AttachmentType.Image :
-        attachment?.postMultiImageRenderer ? AttachmentType.Image :
-        attachment?.pollRenderer ? AttachmentType.Poll :  
-        attachment?.videoRenderer ? AttachmentType.Video : "INVALID"
-    ) : AttachmentType.None;
+    let attachmentType: AttachmentType | "INVALID";
+    switch (true) {
+        case !attachment: attachmentType = AttachmentType.None; break;
+        case attachment.backstageImageRenderer != undefined || attachment.postMultiImageRenderer != undefined: attachmentType = AttachmentType.Image; break;
+        case attachment.pollRenderer != undefined: attachmentType = AttachmentType.Poll; break;
+        case attachment.videoRenderer != undefined: attachmentType = AttachmentType.Video; break;
+        default: attachmentType = "INVALID";
+    }
     
     if (attachmentType === "INVALID") {
         throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open an issue with this error!`);
     }
 
     const images = (() => {
-        if (attachmentType !== AttachmentType.Image) return undefined;
+        if (attachmentType !== AttachmentType.Image) return;
         const images: string[] = [];
 
         const addToImages = (imageRenderer: any) => {
             images.push(
-                sanitizeUrl(getLastItem(imageRenderer.image.thumbnails).url)
+                getThumbnail(imageRenderer.image.thumbnails)
             )
         }
 
-        attachment.backstageImageRenderer ? 
-            addToImages(attachment.backstageImageRenderer) : 
-            attachment.postMultiImageRenderer.images.forEach(
-            ({backstageImageRenderer}: any) => {
-                    addToImages(backstageImageRenderer)
-                }
-            );
+        if (attachment.backstageImageRenderer) addToImages(attachment.backstageImageRenderer);
+        else {
+            for (const {backstageImageRenderer} of attachment.postMultiImageRenderer.images) {
+                addToImages(backstageImageRenderer)
+            }
+        }
 
         return images;
     })();
@@ -95,8 +95,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         return rawChoices.map((rawChoice: {text: Record<string, any>, image: Record<string, any>}): PollChoice => {
             const text = mergeRuns(rawChoice.text.runs);
             const choice: PollChoice = {text};
-            if (rawChoice.image) choice.imageUrl = sanitizeUrl(getLastItem(rawChoice.image.thumbnails).url);
-
+            if (rawChoice.image) choice.imageUrl = getThumbnail(rawChoice.image.thumbnails);
             return choice;
         });
     })();
@@ -108,7 +107,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
 
 
         // ? Is this even required? https://i.ytimg.com/vi/[id]/maxresdefault.jpg is a thing.
-        const thumbnail = sanitizeUrl(getLastItem(thumbnails.thumbnails).url);
+        const thumbnail =  getThumbnail(thumbnails.thumbnails);
         const title = mergeRuns(titleRaw.runs);
         const descriptionSnippet = mergeRuns(descriptionSnippetRaw.runs);
 
@@ -170,7 +169,7 @@ export function extractCommunityPosts(source: ytInitialData): CommunityPost[]
 export function extractCommunityPosts(source: string): CommunityPost[]
 export function extractCommunityPosts(source: string | ytInitialData): CommunityPost[] {
     const ytInitialData : ytInitialData = typeof source === "string" ? parseRawData({source, ytInitialData: true}).ytInitialData! : source;
-    if (!ytInitialData) throw new TypeError(`No YT initial data in provided source: ${JSON.stringify(source)}`);
+    if (!ytInitialData) throw new TypeError(`No YT initial data in provided source.`);
     
     // Slight optimization to skip unused tabs and meta tags.
     const rawPosts = findValuesByKeys(findActiveTab(ytInitialData), communityPostKeys);
