@@ -1,7 +1,8 @@
 import type {
     ytInitialData, 
     ytInitialPlayerResponse, 
-    YTInitialDataChannelTab
+    YTInitialDataChannelTab,
+    Thumbnail
 } from "./youtube-types";
 
 /**
@@ -110,3 +111,5 @@ export const tryParseDate = (timestamp: string) => {
     if (!isValidDate(date)) return undefined;
     return date;
 }
+
+export const getThumbnail = (thumbnails: Thumbnail[]): string => sanitizeUrl(getLastItem(thumbnails).url);
