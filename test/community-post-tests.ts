@@ -1,13 +1,13 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { assert } from "chai";
-import { extractCommunityPosts } from "../src";
+import { extractCommunityPosts, AttachmentType } from "../src";
 
 const getPathName = (fileName: string) => path.join(__dirname, "res", fileName);
 
 describe("Community post tests", () => {
-    describe("General tests", () => {
-        it("Should parse a full community page properly", () => {
+    describe("General posts tests", () => {
+        it("should parse a full community page properly", () => {
             const communityPage = readFileSync(getPathName("natsume-community-page.html"))?.toString();
     
             const posts = extractCommunityPosts(communityPage);
@@ -17,7 +17,7 @@ describe("Community post tests", () => {
     });
 
 
-    describe("Poll tests", () => {
+    describe("Poll posts tests", () => {
         it("should parse a normal poll from a community post", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("selen-poll-no-images.json")).toString());
             const [post] = extractCommunityPosts(ytInitialData);
@@ -43,8 +43,8 @@ describe("Community post tests", () => {
     });
     
     
-    describe("Images tests", () => {
-        it("Should parse images from a community post with one image", () => {
+    describe("Image posts tests", () => {
+        it("should parse images from a community post with one image", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("natsume-single-image-post.json")).toString());
             const [post] = extractCommunityPosts(ytInitialData);
     
@@ -55,7 +55,7 @@ describe("Community post tests", () => {
             assert.isString(images[0]);
         }); 
     
-        it("Should parse images from a community post with multiple images", () => {
+        it("should parse images from a community post with multiple images", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("pina-multi-image-post.json")).toString());
             const [post] = extractCommunityPosts(ytInitialData);
     
@@ -72,8 +72,8 @@ describe("Community post tests", () => {
     });
     
     
-    describe("Quoted post tests", () => {
-        it("Should deal with quoted community posts properly.", () => {
+    describe("Shared posts tests", () => {
+        it("should deal with quoted community posts properly.", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("shared-post.json")).toString());
             const posts = extractCommunityPosts(ytInitialData);
     
@@ -86,6 +86,59 @@ describe("Community post tests", () => {
             const sharedPost = post.sharedPost!;        
             assert.isString(sharedPost.id, "Did not parse shared post's ID");
             assert.lengthOf(sharedPost.images!, 1);
+        });
+    });
+
+    describe("Video posts tests", () => {
+        it("should extract a video", () => {
+            const ytInitialData = JSON.parse(readFileSync(getPathName("video-post.json")).toString());
+            const [post] = extractCommunityPosts(ytInitialData);
+
+            assert.equal(post.attachmentType, AttachmentType.Video);
+            
+            const video = post.video!;
+
+            assert.equal(video.id, "tzXcH4Q1iiY");
+            assert.isString(video.thumbnail);
+            assert.isString(video.title);
+            assert.isString(video.descriptionSnippet);
+            assert.isFalse(video.membersOnly);
+        });
+
+        it("should extract a members only video", () => {
+            const ytInitialData = JSON.parse(readFileSync(getPathName("mo-video-post.json")).toString());
+            const [post] = extractCommunityPosts(ytInitialData);
+
+            assert.equal(post.attachmentType, AttachmentType.Video);
+            assert.isTrue(post.video!.membersOnly);
+        });
+
+        it("should not throw on a deleted video", () => {
+            const ytInitialData = JSON.parse(readFileSync(getPathName("deleted-video-post.json")).toString());
+            const [post] = extractCommunityPosts(ytInitialData);
+
+            assert.isUndefined(post.video!.id);
+        });
+    });
+
+    describe("Playlist posts tests", () => {
+        // TODO: find a post with a playlist that hasn't been deleted
+        it("should extract a playlist", () => {
+
+        });
+
+        it("should not throw on a deleted playlist", () => {
+            const ytInitialData = JSON.parse(readFileSync(getPathName("yuuri-unavailable-playlist-post.json")).toString());
+            const [post] = extractCommunityPosts(ytInitialData); 
+
+            assert.isDefined(post);
+            assert.equal(post.attachmentType, AttachmentType.Playlist);
+
+            const playlist = post.playlist!;
+
+            assert.isDefined(playlist);
+            assert.isUndefined(playlist.id);
+            assert.isString(playlist.title);
         });
     });
 });

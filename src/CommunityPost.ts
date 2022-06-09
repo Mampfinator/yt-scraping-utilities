@@ -11,6 +11,7 @@ export enum AttachmentType {
     Image = "IMAGE",
     Poll = "POLL",
     Video = "VIDEO",
+    Playlist = "PLAYLIST",
     None = "NONE",
 }
 
@@ -36,10 +37,20 @@ export interface CommunityPost {
 
     /* Only present if attachmentType is `VIDEO` */
     video?: {
-        id: string;
+        id?: string; // TODO: test for invalid cases 
         title: string;
-        descriptionSnippet: string;
+        descriptionSnippet?: string;
         thumbnail: string;
+        membersOnly: boolean;
+    }
+
+    playlist?: {
+        /**
+         * If ID is undefined, the playlist is no longer available.
+         */
+        id?: string;
+        title: string;
+        thumbail: string;
     }
 
     sharedPost?: CommunityPost;
@@ -60,6 +71,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         case attachment.backstageImageRenderer != undefined || attachment.postMultiImageRenderer != undefined: attachmentType = AttachmentType.Image; break;
         case attachment.pollRenderer != undefined: attachmentType = AttachmentType.Poll; break;
         case attachment.videoRenderer != undefined: attachmentType = AttachmentType.Video; break;
+        case attachment.playlistRenderer != undefined: attachmentType = AttachmentType.Playlist; break;
         default: attachmentType = "INVALID";
     }
     
@@ -88,7 +100,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
     })();
 
     const choices = (() => {
-        if (attachmentType !== AttachmentType.Poll || !attachment.pollRenderer) return;
+        if (attachmentType !== AttachmentType.Poll) return;
         const {choices: rawChoices} = attachment.pollRenderer;
 
         // TODO: proper YouTube typings for easier development because ytInitialData is a mess.
@@ -103,19 +115,34 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
     const video = (() => {
         if (attachmentType !== AttachmentType.Video) return;
 
-        const {videoId: id, thumbnail: thumbnails, title: titleRaw, descriptionSnippet: descriptionSnippetRaw} = attachment.videoRenderer;
-
+        const {videoId: id, thumbnail: thumbnails, title: titleRaw, descriptionSnippet: descriptionSnippetRaw, badges} = attachment.videoRenderer;
 
         // ? Is this even required? https://i.ytimg.com/vi/[id]/maxresdefault.jpg is a thing.
         const thumbnail =  getThumbnail(thumbnails.thumbnails);
-        const title = mergeRuns(titleRaw.runs);
-        const descriptionSnippet = mergeRuns(descriptionSnippetRaw.runs);
+
+        const title =  titleRaw.simpleText ?? mergeRuns(titleRaw.runs);
+        const descriptionSnippet = descriptionSnippetRaw ? mergeRuns(descriptionSnippetRaw.runs) : undefined;
+
+        const membersOnly: boolean = (badges && badges.some(({metadataBadgeRenderer}: any) => metadataBadgeRenderer?.style == "BADGE_STYLE_TYPE_MEMBERS_ONLY")) ?? false;
 
         return {
             id,
             title, 
             descriptionSnippet,
-            thumbnail
+            thumbnail,
+            membersOnly
+        }
+    })();
+
+    const playlist = (() => {
+        // TODO: find a members only playlist shared in a post to find out if that's even a thing that'd be displayed.
+        if (attachmentType !== AttachmentType.Playlist) return;
+        const {title: titleRenderer, thumbnailRenderer, playlistId: id} = attachment.playlistRenderer;
+        const title: string = titleRenderer.simpleText ?? mergeRuns(titleRenderer.text.runs);
+        const thumbail: string = getThumbnail(thumbnailRenderer.playlistVideoThumbnailRenderer.thumbnail.thumbnails);
+
+        return {
+            id, title, thumbail
         }
     })();
 
@@ -155,6 +182,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
     if (images) post.images = images;
     if (choices) post.choices = choices;
     if (video) post.video = video;
+    if (playlist) post.playlist = playlist; 
 
     if (originalPost) post.sharedPost = extractPost(originalPost.backstagePostRenderer);
 
