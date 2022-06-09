@@ -1,4 +1,4 @@
-//TODO: export * from "./ChannelInfo";
+export * from "./ChannelInfo";
 export * from "./CommunityPost";
 export * from "./Video";
 
