@@ -11,13 +11,13 @@ describe("Community post tests", () => {
             const communityPage = readFileSync(getPathName("natsume-community-page.html"))?.toString();
     
             const posts = extractCommunityPosts(communityPage);
-            // fixed number in prew-downloaded reference HTML.
-            assert.lengthOf(posts, 8)
+            // fixed number in pre-downloaded reference HTML.
+            assert.lengthOf(posts, 8);
         });
     });
 
 
-    describe("Poll test", () => {
+    describe("Poll tests", () => {
         it("should parse a normal poll from a community post", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("selen-poll-no-images.json")).toString());
             const [post] = extractCommunityPosts(ytInitialData);
@@ -43,7 +43,7 @@ describe("Community post tests", () => {
     });
     
     
-    describe("Images test", () => {
+    describe("Images tests", () => {
         it("Should parse images from a community post with one image", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("natsume-single-image-post.json")).toString());
             const [post] = extractCommunityPosts(ytInitialData);
@@ -72,7 +72,7 @@ describe("Community post tests", () => {
     });
     
     
-    describe("Quoted post test", () => {
+    describe("Quoted post tests", () => {
         it("Should deal with quoted community posts properly.", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("shared-post.json")).toString());
             const posts = extractCommunityPosts(ytInitialData);
