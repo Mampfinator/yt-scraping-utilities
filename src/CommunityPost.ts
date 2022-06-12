@@ -153,8 +153,8 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
                 const {commandMetadata} = navigationEndpoint;
 
                 let url: string;
-                const initialUrl = new URL(commandMetadata.webCommandMetadata.url);
-                
+                const {url: parsedUrl} = commandMetadata.webCommandMetadata as {url: string};
+                const initialUrl = new URL(commandMetadata.webCommandMetadata.url, parsedUrl.startsWith("http") ? undefined : "https://youtube.com/");
                 // q parameter is the redirect target for /redirect links
                 if (initialUrl.searchParams.has("q")) {
                     url = initialUrl.searchParams.get("q")!;
