@@ -15,18 +15,24 @@ export const initialDataRe = /(?<=var ytInitialData *\= *)\{.*?}(?=\;)(?<![A-z<>
 export const playerResponseRe = /(?<=var ytInitialPlayerResponse *\= *)\{.*?}(?=\;)(?<![A-z<>])/;
 
 
-interface ParseRawOptions {
+interface ParseRawOptions<D extends boolean, P extends boolean> {
     source: string;
-    ytInitialData?: boolean;
-    ytInitialPlayerResponse?: boolean;
+    ytInitialData?: D;
+    ytInitialPlayerResponse?: P;
 }
+
+interface ParseRawReturn<D extends boolean, P extends boolean> {
+    ytInitialData?: D extends true ? ytInitialData : never;
+    ytInitialPlayerResponse?: P extends true ? ytInitialPlayerResponse : never;
+}
+
 /**
  * Extract raw full objects (`ytInitialData` and `ytInitialPlayerResponse`) from a YT page string.
  * @param options.source - the YouTube page body as string.
  * @param options.ytInitialData - whether or not to parse and return ytInitialData. 
  * @param options.ytInitialPlayerResponse - whether or not to parse and return ytInitialPlayerResponse (only present on /watch and youtu.be pages).
  */
-export function parseRawData(options: ParseRawOptions) {
+export function parseRawData<D extends boolean = false, P extends boolean = false>(options: ParseRawOptions<D, P>): ParseRawReturn<D, P> {
     const {
         source,
         ytInitialData: extractInitialData,
@@ -35,7 +41,7 @@ export function parseRawData(options: ParseRawOptions) {
     if (!source) throw new TypeError("No source string to search provided.");
     if (!extractInitialData && !extractPlayerResponse) throw new TypeError("At least one of ytInitialData and ytInitialPlayerResponse need to be parsed.");
 
-    const ret: {ytInitialData?: ytInitialData, ytInititalPlayerRespone?: ytInitialPlayerResponse} = {};
+    const ret: ParseRawReturn<D, P> = {};
     if (extractInitialData) {
         const match = initialDataRe.exec(source);
         match && (ret.ytInitialData = JSON.parse(match[0]));
@@ -43,7 +49,7 @@ export function parseRawData(options: ParseRawOptions) {
 
     if (extractPlayerResponse) {
         const match = playerResponseRe.exec(source);
-        match && (ret.ytInititalPlayerRespone = JSON.parse(match[0])); 
+        match && (ret.ytInitialPlayerResponse = JSON.parse(match[0])); 
     }
 
     return ret;
