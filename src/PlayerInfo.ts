@@ -87,7 +87,7 @@ export interface PlayerInfo {
 export function extractPlayerInfo(source: ytInitialPlayerResponse): PlayerInfo
 export function extractPlayerInfo(source: string): PlayerInfo
 export function extractPlayerInfo(source: string | ytInitialPlayerResponse): PlayerInfo {
-    const playerResponse : ytInitialPlayerResponse = typeof source === "string" ? parseRawData({source, ytInitialPlayerResponse: true}).ytInititalPlayerRespone! : source;
+    const playerResponse : ytInitialPlayerResponse = typeof source === "string" ? parseRawData({source, ytInitialPlayerResponse: true}).ytInitialPlayerResponse! : source;
     if (!playerResponse) throw new TypeError(`No player response in provided source! Make sure the source is from /watch or a youtu.be link!`);
 
 

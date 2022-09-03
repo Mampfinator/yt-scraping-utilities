@@ -1,6 +1,5 @@
 export type ytInitialData = Record<string, any>;
 export type ytInitialPlayerResponse = Record<string, any>
-
 export interface YTInitialDataChannelTab {
     tabRenderer: {
         endpoint: {
@@ -86,4 +85,241 @@ export interface LinkAlternate {
 
 export interface MicroformatRendererThumbnail {
     thumbnails: Thumbnail[];
+}
+
+export interface GridVideoRenderer {
+    videoId:            string;
+    thumbnail:          GridVideoRendererThumbnail;
+    title:              Title;
+    publishedTimeText:  Text;
+    viewCountText:      Text;
+    navigationEndpoint: NavigationEndpoint;
+    ownerBadges:        OwnerBadge[];
+    trackingParams:     string;
+    shortViewCountText: ShortViewCountTextClass;
+    menu:               Menu;
+    thumbnailOverlays:  ThumbnailOverlay[];
+}
+
+export interface Menu {
+    menuRenderer: MenuRenderer;
+}
+
+export interface MenuRenderer {
+    items:          Item[];
+    trackingParams: string;
+    accessibility:  Accessibility;
+}
+
+export interface Accessibility {
+    accessibilityData: AccessibilityData;
+}
+
+export interface AccessibilityData {
+    label: string;
+}
+
+export interface Item {
+    menuServiceItemRenderer: MenuServiceItemRenderer;
+}
+
+export interface MenuServiceItemRenderer {
+    text:            MenuServiceItemRendererText;
+    icon:            Icon;
+    serviceEndpoint: ServiceEndpoint;
+    trackingParams:  string;
+}
+
+export interface Icon {
+    iconType: string;
+}
+
+export interface ServiceEndpoint {
+    clickTrackingParams:   string;
+    commandMetadata:       ServiceEndpointCommandMetadata;
+    signalServiceEndpoint: SignalServiceEndpoint;
+}
+
+export interface ServiceEndpointCommandMetadata {
+    webCommandMetadata: PurpleWebCommandMetadata;
+}
+
+export interface PurpleWebCommandMetadata {
+    sendPost: boolean;
+}
+
+export interface SignalServiceEndpoint {
+    signal:  string;
+    actions: SignalServiceEndpointAction[];
+}
+
+export interface SignalServiceEndpointAction {
+    clickTrackingParams:  string;
+    addToPlaylistCommand: AddToPlaylistCommand;
+}
+
+export interface AddToPlaylistCommand {
+    openMiniplayer:      boolean;
+    videoId:             string;
+    listType:            string;
+    onCreateListCommand: OnCreateListCommand;
+    videoIds:            string[];
+}
+
+export interface OnCreateListCommand {
+    clickTrackingParams:           string;
+    commandMetadata:               OnCreateListCommandCommandMetadata;
+    createPlaylistServiceEndpoint: CreatePlaylistServiceEndpoint;
+}
+
+export interface OnCreateListCommandCommandMetadata {
+    webCommandMetadata: FluffyWebCommandMetadata;
+}
+
+export interface FluffyWebCommandMetadata {
+    sendPost: boolean;
+    apiUrl?:  string;
+}
+
+export interface CreatePlaylistServiceEndpoint {
+    videoIds: string[];
+    params:   string;
+}
+
+export interface MenuServiceItemRendererText {
+    runs: Run[];
+}
+
+export interface Run {
+    text: string;
+}
+
+export interface NavigationEndpoint {
+    clickTrackingParams: string;
+    commandMetadata:     NavigationEndpointCommandMetadata;
+    watchEndpoint:       WatchEndpoint;
+}
+
+export interface NavigationEndpointCommandMetadata {
+    webCommandMetadata: TentacledWebCommandMetadata;
+}
+
+export interface TentacledWebCommandMetadata {
+    url:         string;
+    webPageType: string;
+    rootVe:      number;
+}
+
+export interface WatchEndpoint {
+    videoId:                            string;
+    watchEndpointSupportedOnesieConfig: WatchEndpointSupportedOnesieConfig;
+}
+
+export interface WatchEndpointSupportedOnesieConfig {
+    html5PlaybackOnesieConfig: Html5PlaybackOnesieConfig;
+}
+
+export interface Html5PlaybackOnesieConfig {
+    commonConfig: CommonConfig;
+}
+
+export interface CommonConfig {
+    url: string;
+}
+
+export interface OwnerBadge {
+    metadataBadgeRenderer: MetadataBadgeRenderer;
+}
+
+export interface MetadataBadgeRenderer {
+    icon:              Icon;
+    style:             string;
+    tooltip:           string;
+    trackingParams:    string;
+    accessibilityData: AccessibilityData;
+}
+
+export interface Text {
+    simpleText: string;
+}
+
+export interface ShortViewCountTextClass {
+    accessibility: Accessibility;
+    simpleText:    string;
+}
+
+export interface GridVideoRendererThumbnail {
+    thumbnails: ThumbnailElement[];
+}
+
+export interface ThumbnailElement {
+    url:    string;
+    width:  number;
+    height: number;
+}
+
+export interface ThumbnailOverlay {
+    thumbnailOverlayTimeStatusRenderer?:   ThumbnailOverlayTimeStatusRenderer;
+    thumbnailOverlayToggleButtonRenderer?: ThumbnailOverlayToggleButtonRenderer;
+    thumbnailOverlayNowPlayingRenderer?:   ThumbnailOverlayNowPlayingRenderer;
+}
+
+export interface ThumbnailOverlayNowPlayingRenderer {
+    text: MenuServiceItemRendererText;
+}
+
+export interface ThumbnailOverlayTimeStatusRenderer {
+    text:  ShortViewCountTextClass;
+    style: string;
+}
+
+export interface ThumbnailOverlayToggleButtonRenderer {
+    isToggled?:               boolean;
+    untoggledIcon:            Icon;
+    toggledIcon:              Icon;
+    untoggledTooltip:         string;
+    toggledTooltip:           string;
+    untoggledServiceEndpoint: UntoggledServiceEndpoint;
+    toggledServiceEndpoint?:  ToggledServiceEndpoint;
+    untoggledAccessibility:   Accessibility;
+    toggledAccessibility:     Accessibility;
+    trackingParams:           string;
+}
+
+export interface ToggledServiceEndpoint {
+    clickTrackingParams:  string;
+    commandMetadata:      OnCreateListCommandCommandMetadata;
+    playlistEditEndpoint: ToggledServiceEndpointPlaylistEditEndpoint;
+}
+
+export interface ToggledServiceEndpointPlaylistEditEndpoint {
+    playlistId: string;
+    actions:    PurpleAction[];
+}
+
+export interface PurpleAction {
+    action:         string;
+    removedVideoId: string;
+}
+
+export interface UntoggledServiceEndpoint {
+    clickTrackingParams:    string;
+    commandMetadata:        OnCreateListCommandCommandMetadata;
+    playlistEditEndpoint?:  UntoggledServiceEndpointPlaylistEditEndpoint;
+    signalServiceEndpoint?: SignalServiceEndpoint;
+}
+
+export interface UntoggledServiceEndpointPlaylistEditEndpoint {
+    playlistId: string;
+    actions:    FluffyAction[];
+}
+
+export interface FluffyAction {
+    addedVideoId: string;
+    action:       string;
+}
+
+export interface Title {
+    runs:          Run[];
+    accessibility: Accessibility;
 }
