@@ -26,6 +26,7 @@ export function extractVideoRenderer(source: GridVideoRenderer): VideoRenderer {
         const statusRenderer = thumbnailOverlays.find(overlay => overlay.thumbnailOverlayTimeStatusRenderer)?.thumbnailOverlayTimeStatusRenderer;
         switch (statusRenderer?.style) {
             case "DEFAULT":
+            case "SHORTS":
                 return "offline";
             case "UPCOMING":
                 return "upcoming";
