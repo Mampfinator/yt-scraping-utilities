@@ -2,7 +2,8 @@ import type {
     ytInitialData, 
     ytInitialPlayerResponse, 
     YTInitialDataChannelTab,
-    Thumbnail
+    Thumbnail,
+    Run
 } from "./youtube-types";
 
 /**
@@ -109,7 +110,7 @@ export const sanitizeUrl = (url: string, offset = 0): string => {
 /**
  * Merges runs Arrays into a single text string.
  */
-export const mergeRuns = (runs: {text: string}[]) => runs.map(r => r.text).join("");
+export const mergeRuns = (runs: Run[]) => runs.map(r => r.text).join("");
 
 export const isValidDate = (date: Date) => !isNaN(date.getTime());
 export const tryParseDate = (timestamp: string) => {
@@ -119,3 +120,29 @@ export const tryParseDate = (timestamp: string) => {
 }
 
 export const getThumbnail = (thumbnails: Thumbnail[]): string => sanitizeUrl(getLastItem(thumbnails).url);
+
+export const getTextOrMergedRuns = (source: RequireOnlyOne<{runs: Run[], simpleText: string}, "runs" | "simpleText">) => 
+    source.simpleText ?? mergeRuns(source.runs);
+
+export function transformYtInitialData<T, U>(source: ytInitialData | string, searchKeys: string[], transformer: (sourceItem: U) => T): T[] {
+    if (typeof source !== "object") source = parseRawData({ytInitialData: true, source}).ytInitialData!;
+    const items: U[] = findValuesByKeys(source, searchKeys);
+    return items.map(transformer);
+}
+
+/**
+ * utility types taken from KPD's answer at https://stackoverflow.com/questions/40510611/typescript-interface-require-one-of-two-properties-to-exist
+ */
+export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
+    Pick<T, Exclude<keyof T, Keys>> 
+    & {
+        [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
+    }[Keys];
+
+export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
+    Pick<T, Exclude<keyof T, Keys>>
+    & {
+        [K in Keys]-?:
+            Required<Pick<T, K>>
+            & Partial<Record<Exclude<Keys, K>, undefined>>
+    }[Keys];

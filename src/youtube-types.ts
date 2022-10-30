@@ -1,3 +1,5 @@
+import { RequireOnlyOne } from "./util";
+
 export type ytInitialData = Record<string, any>;
 export type ytInitialPlayerResponse = Record<string, any>
 export interface YTInitialDataChannelTab {
@@ -270,7 +272,7 @@ export interface ThumbnailOverlayNowPlayingRenderer {
 
 export interface ThumbnailOverlayTimeStatusRenderer {
     text:  ShortViewCountTextClass;
-    style: string;
+    style: "DEFAULT" | "UPCOMING" | "LIVE" | "SHORTS" /* most likely deprecated, but we'll keep it for backwards compatibility. */;
 }
 
 export interface ThumbnailOverlayToggleButtonRenderer {
@@ -322,4 +324,212 @@ export interface FluffyAction {
 export interface Title {
     runs:          Run[];
     accessibility: Accessibility;
+}
+
+export interface ReelItemRenderer {
+    videoId:            string;
+    headline:           RequireOnlyOne<Headline, "runs" | "simpleText">;
+    thumbnail:          ReelWatchEndpointThumbnail;
+    viewCountText:      ViewCountText;
+    navigationEndpoint: ReelItemRendererNavigationEndpoint;
+    menu:               Menu;
+    trackingParams:     string;
+    accessibility:      Accessibility;
+    style:              string;
+    videoType:          string;
+    loggingDirectives:  LoggingDirectives;
+}
+
+export interface Accessibility {
+    accessibilityData: AccessibilityData;
+}
+
+export interface AccessibilityData {
+    label: string;
+}
+
+export interface Headline {
+    simpleText?: string;
+    runs?: Run[]
+}
+
+export interface LoggingDirectives {
+    trackingParams:                string;
+    visibility:                    Visibility;
+    enableDisplayloggerExperiment: boolean;
+}
+
+export interface Visibility {
+    types: string;
+}
+
+export interface Menu {
+    menuRenderer: MenuRenderer;
+}
+
+export interface MenuRenderer {
+    items:          Item[];
+    trackingParams: string;
+    accessibility:  Accessibility;
+}
+
+export interface Item {
+    menuNavigationItemRenderer: MenuNavigationItemRenderer;
+}
+
+export interface MenuNavigationItemRenderer {
+    text:               Text;
+    icon:               Icon;
+    navigationEndpoint: MenuNavigationItemRendererNavigationEndpoint;
+    trackingParams:     string;
+    accessibility:      Accessibility;
+}
+
+export interface Icon {
+    iconType: string;
+}
+
+export interface MenuNavigationItemRendererNavigationEndpoint {
+    clickTrackingParams:  string;
+    commandMetadata:      PurpleCommandMetadata;
+    userFeedbackEndpoint: UserFeedbackEndpoint;
+}
+
+export interface PurpleCommandMetadata {
+    webCommandMetadata: PurpleWebCommandMetadata;
+}
+
+export interface PurpleWebCommandMetadata {
+    ignoreNavigation: boolean;
+}
+
+export interface UserFeedbackEndpoint {
+    additionalDatas: AdditionalData[];
+}
+
+export interface AdditionalData {
+    userFeedbackEndpointProductSpecificValueData: UserFeedbackEndpointProductSpecificValueData;
+}
+
+export interface UserFeedbackEndpointProductSpecificValueData {
+    key:   string;
+    value: string;
+}
+
+export interface Text {
+    runs: TextRun[];
+}
+
+export interface TextRun {
+    text: string;
+}
+
+export interface ReelItemRendererNavigationEndpoint {
+    clickTrackingParams: string;
+    commandMetadata:     ChannelNavigationEndpointCommandMetadata;
+    reelWatchEndpoint:   ReelWatchEndpoint;
+}
+
+export interface ChannelNavigationEndpointCommandMetadata {
+    webCommandMetadata: FluffyWebCommandMetadata;
+}
+
+export interface FluffyWebCommandMetadata {
+    url:         string;
+    webPageType: string;
+    rootVe:      number;
+    apiUrl?:     string;
+}
+
+export interface ReelWatchEndpoint {
+    videoId:          string;
+    playerParams:     string;
+    thumbnail:        ReelWatchEndpointThumbnail;
+    overlay:          Overlay;
+    params:           string;
+    sequenceProvider: string;
+    sequenceParams:   string;
+}
+
+export interface Overlay {
+    reelPlayerOverlayRenderer: ReelPlayerOverlayRenderer;
+}
+
+export interface ReelPlayerOverlayRenderer {
+    reelPlayerHeaderSupportedRenderers: ReelPlayerHeaderSupportedRenderers;
+    nextItemButton:                     ItemButton;
+    prevItemButton:                     ItemButton;
+    style:                              string;
+    trackingParams:                     string;
+}
+
+export interface ItemButton {
+    buttonRenderer: ButtonRenderer;
+}
+
+export interface ButtonRenderer {
+    trackingParams: string;
+}
+
+export interface ReelPlayerHeaderSupportedRenderers {
+    reelPlayerHeaderRenderer: ReelPlayerHeaderRenderer;
+}
+
+export interface ReelPlayerHeaderRenderer {
+    reelTitleText:             ReelTitleText;
+    timestampText:             RequireOnlyOne<Headline, "runs" | "simpleText">;
+    channelNavigationEndpoint: ReelNavigationEndpoint;
+    channelTitleText:          ChannelTitleText;
+    channelThumbnail:          ChannelThumbnail;
+    trackingParams:            string;
+    accessibility:             Accessibility;
+}
+
+export interface ReelNavigationEndpoint {
+    clickTrackingParams: string;
+    commandMetadata:     ChannelNavigationEndpointCommandMetadata;
+    browseEndpoint:      BrowseEndpoint;
+}
+
+export interface BrowseEndpoint {
+    browseId:         string;
+    canonicalBaseUrl: string;
+}
+
+export interface ChannelThumbnail {
+    thumbnails: ThumbnailElement[];
+}
+
+export interface ThumbnailElement {
+    url:    string;
+    width:  number;
+    height: number;
+}
+
+export interface ChannelTitleText {
+    runs: ChannelTitleTextRun[];
+}
+
+export interface ChannelTitleTextRun {
+    text:               string;
+    navigationEndpoint: NavigationEndpoint;
+}
+
+export interface ReelTitleText {
+    runs: ReelTitleTextRun[];
+}
+
+export interface ReelTitleTextRun {
+    text:               string;
+    loggingDirectives?: LoggingDirectives;
+}
+
+export interface ReelWatchEndpointThumbnail {
+    thumbnails:            ThumbnailElement[];
+    isOriginalAspectRatio: boolean;
+}
+
+export interface ViewCountText {
+    accessibility: Accessibility;
+    simpleText:    string;
 }
