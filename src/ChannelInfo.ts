@@ -1,5 +1,5 @@
 import type { ytInitialData, ChannelMetadataRenderer, MicroformatDataRenderer } from "./youtube-types";
-import { parseRawData, getLastItem, sanitizeUrl, getThumbnail } from "./util";
+import { parseRawData, getThumbnail } from "./util";
 
 export interface ChannelInfo {
     id: string;

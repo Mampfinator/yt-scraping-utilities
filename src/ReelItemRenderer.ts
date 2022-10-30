@@ -1,5 +1,5 @@
 import { VideoRenderer, VideoRendererStatus } from "./GridVideoRenderer";
-import { findValuesByKeys, getTextOrMergedRuns, mergeRuns, parseRawData, transformYtInitialData } from "./util";
+import { getTextOrMergedRuns, transformYtInitialData } from "./util";
 import { ReelItemRenderer, ytInitialData } from "./youtube-types";
 
 export function extractReelItemRenderers(source: ytInitialData): VideoRenderer[]

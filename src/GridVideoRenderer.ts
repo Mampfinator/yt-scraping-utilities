@@ -1,6 +1,4 @@
-// TODO: add support for new reelShelfRenderer.
-
-import { findValuesByKeys, mergeRuns, parseRawData, transformYtInitialData } from "./util";
+import { mergeRuns, transformYtInitialData } from "./util";
 import { GridVideoRenderer, ytInitialData } from "./youtube-types";
 
 export interface VideoRenderer {

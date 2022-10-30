@@ -1,9 +1,6 @@
 import type { ytInitialData } from "./youtube-types";
 import { 
-    findValuesByKeys,  
-    parseRawData, 
     mergeRuns, 
-    findActiveTab, 
     getThumbnail,
     transformYtInitialData
 } from "./util";
