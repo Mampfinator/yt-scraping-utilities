@@ -4,7 +4,8 @@ import {
     parseRawData, 
     mergeRuns, 
     findActiveTab, 
-    getThumbnail
+    getThumbnail,
+    transformYtInitialData
 } from "./util";
 
 export enum AttachmentType {
@@ -103,7 +104,6 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         if (attachmentType !== AttachmentType.Poll) return;
         const {choices: rawChoices} = attachment.pollRenderer;
 
-        // TODO: proper YouTube typings for easier development because ytInitialData is a mess.
         return rawChoices.map((rawChoice: {text: Record<string, any>, image: Record<string, any>}): PollChoice => {
             const text = mergeRuns(rawChoice.text.runs);
             const choice: PollChoice = {text};
@@ -196,10 +196,5 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
 export function extractCommunityPosts(source: ytInitialData): CommunityPost[]
 export function extractCommunityPosts(source: string): CommunityPost[]
 export function extractCommunityPosts(source: string | ytInitialData): CommunityPost[] {
-    const ytInitialData : ytInitialData = typeof source === "string" ? parseRawData({source, ytInitialData: true}).ytInitialData! : source;
-    if (!ytInitialData) throw new TypeError(`No YT initial data in provided source.`);
-    
-    // Slight optimization to skip unused tabs and meta tags.
-    const rawPosts = findValuesByKeys(findActiveTab(ytInitialData), communityPostKeys);
-    return rawPosts.map(post => extractPost(post));
+    return transformYtInitialData(source, communityPostKeys, extractPost);
 }

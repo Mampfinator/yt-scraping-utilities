@@ -1,6 +1,6 @@
 // TODO: add support for new reelShelfRenderer.
 
-import { findValuesByKeys, mergeRuns, parseRawData } from "./util";
+import { findValuesByKeys, mergeRuns, parseRawData, transformYtInitialData } from "./util";
 import { GridVideoRenderer, ytInitialData } from "./youtube-types";
 
 export interface VideoRenderer {
@@ -13,9 +13,7 @@ export function extractGridVideoRenderers(source: ytInitialData): VideoRenderer[
 export function extractGridVideoRenderers(source: string): VideoRenderer[]
 export function extractGridVideoRenderers(source: string | ytInitialData): VideoRenderer[]
 {
-    if (typeof source !== "object") source = parseRawData({ytInitialData: true, source}).ytInitialData!;
-    const gridVideoRenderers = findValuesByKeys(source, ["gridVideoRenderer"]);
-    return gridVideoRenderers.map(extractGridVideoRenderer);
+    return transformYtInitialData(source, ["gridVideoRenderer"], extractGridVideoRenderer);
 }
 
 export enum VideoRendererStatus {
