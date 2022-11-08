@@ -81,9 +81,6 @@ describe("Community post tests", () => {
 
             assert.lengthOf(posts, 1, "parsed parent & child post separately");
             const [post] = posts;
-
-
-            console.log(post);
     
             assert.isUndefined((post as ImageCommunityPost).images, "Parsed originalPost's images.");
             
@@ -93,6 +90,15 @@ describe("Community post tests", () => {
             const sharedPost = (post as SharedPostCommunityPost).sharedPost;        
             assert.isString(sharedPost.id, "Did not parse shared post's ID");
             assert.lengthOf((sharedPost as ImageCommunityPost).images, 1);
+        });
+
+
+        it("should put a shared post's content in its content field, ignoring the child post's content", () => {
+            const ytInitialData = JSON.parse(readFileSync(getPathName("shared-post.json")).toString());
+            const [post] = extractCommunityPosts(ytInitialData) as SharedPostCommunityPost[];
+
+            assert.nestedPropertyVal(post.content, "[0].text", "🤣")
+            assert.isFalse(post.content?.[0].text === post.sharedPost.content?.[0].text);
         });
     });
 

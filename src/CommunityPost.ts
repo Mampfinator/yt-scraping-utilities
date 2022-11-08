@@ -2,7 +2,8 @@ import type { ytInitialData } from "./youtube-types";
 import { 
     mergeRuns, 
     getThumbnail,
-    transformYtInitialData
+    transformYtInitialData,
+    getTextOrMergedRuns
 } from "./util";
 
 export enum AttachmentType {
@@ -70,43 +71,6 @@ export interface SharedPostCommunityPost extends BaseCommunityPost {
     sharedPost: CommunityPost;
 }
 
-
-// export interface CommunityPost {
-//     id: string;
-//     /**
-//      * To display just the text content of a post, use `content.map(({text}) => text).join("");`.
-//      */
-//     content?: {text: string, url?: string}[];
-
-//     attachmentType: AttachmentType;
-
-//     /* Only present if attachmentType is `IMAGE` */
-//     images?: string[];
-
-//     /* Only present if attachmentType is `POLL` */
-//     choices?: PollChoice[];
-
-//     /* Only present if attachmentType is `VIDEO` */
-//     video?: {
-//         id?: string; // TODO: test for invalid cases 
-//         title: string;
-//         descriptionSnippet?: string;
-//         thumbnail: string;
-//         membersOnly: boolean;
-//     }
-
-//     playlist?: {
-//         /**
-//          * If ID is undefined, the playlist is no longer available.
-//          */
-//         id?: string;
-//         title: string;
-//         thumbail: string;
-//     }
-
-//     sharedPost?: CommunityPost;
-// }
-
 export type CommunityPost = SharedPostCommunityPost | ImageCommunityPost | PollCommunityPost | VideoCommunityPost | PlaylistCommunityPost | TextOnlyCommunityPost;
 
 // NOTE: the order here is important, otherwise the sharedPostRenderer and its original post would appear in separate results.
@@ -116,7 +80,8 @@ const communityPostKeys = ["sharedPostRenderer", "backstagePostRenderer"];
  * Extracts a simplified community post from a `backstagePostRenderer` or a `sharedPostRenderer`.
  */
 export function extractPost(rawPost: Record<string, any>): CommunityPost {
-    const {postId: id, contentText: text, backstageAttachment: attachment, originalPost} = rawPost;
+    // normal posts store text in `contentText`, quote posts store them in `content`.
+    const {postId: id, contentText, backstageAttachment: attachment, originalPost, content: sharedPostContent} = rawPost;
 
     let attachmentType: AttachmentType | "INVALID";
     switch (true) {
@@ -134,8 +99,9 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
         throw new Error(`Could not resolve attachmentType in ${JSON.stringify(attachment)}! Please open an issue with this error!`);
     }
 
-    const content: {text: string, url?: string}[] | undefined = text?.runs && text.runs.map(
-        (run: any) => {
+
+    const content: {text: string, url?: string}[] | undefined = (() => {
+        const runMapper = (run: any) => {
             const {text, navigationEndpoint} = run;
             if (navigationEndpoint) {
                 const {commandMetadata} = navigationEndpoint;
@@ -161,7 +127,12 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
 
             return {text}
         }
-    )
+        // this is a mess.
+        return (
+            contentText?.runs?.map(runMapper) ?? (contentText?.simpleText ? {text: contentText.simpleText} : undefined) ??
+            sharedPostContent?.runs?.map(runMapper) ?? (sharedPostContent?.simpleText ? {text: sharedPostContent.simpleText} : undefined)
+        );
+    })();
 
 
     const post: BaseCommunityPost & Record<string, any> = {id, content, attachmentType};
