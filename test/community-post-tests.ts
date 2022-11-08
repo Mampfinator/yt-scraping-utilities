@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { assert } from "chai";
-import { extractCommunityPosts, AttachmentType } from "../src";
+import { extractCommunityPosts, AttachmentType, PollCommunityPost, ImageCommunityPost, SharedPostCommunityPost, VideoCommunityPost, PlaylistCommunityPost } from "../src";
 
 const getPathName = (fileName: string) => path.join(__dirname, "res", fileName);
 
@@ -20,8 +20,8 @@ describe("Community post tests", () => {
     describe("Poll posts tests", () => {
         it("should parse a normal poll from a community post", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("selen-poll-no-images.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
-
+            const [post] = extractCommunityPosts(ytInitialData) as PollCommunityPost[];
+            
             assert.isDefined(post.choices);
             const choices = post.choices!;
 
@@ -31,8 +31,7 @@ describe("Community post tests", () => {
 
         it("should parse a poll with images from a community post", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("poll-with-images.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
-    
+            const [post] = extractCommunityPosts(ytInitialData) as PollCommunityPost[];
     
             assert.isDefined(post.choices);
             const choices = post.choices!;
@@ -46,7 +45,7 @@ describe("Community post tests", () => {
     describe("Image posts tests", () => {
         it("should parse images from a community post with one image", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("natsume-single-image-post.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
+            const [post] = extractCommunityPosts(ytInitialData) as ImageCommunityPost[];
     
             const images = post.images!;
     
@@ -57,7 +56,7 @@ describe("Community post tests", () => {
     
         it("should parse images from a community post with multiple images", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("pina-multi-image-post.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
+            const [post] = extractCommunityPosts(ytInitialData) as ImageCommunityPost[];
     
             const images = post.images!;
     
@@ -73,26 +72,34 @@ describe("Community post tests", () => {
     
     
     describe("Shared posts tests", () => {
-        it("should deal with quoted community posts properly.", () => {
+        it("should deal with quoted community posts properly", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("shared-post.json")).toString());
+
             const posts = extractCommunityPosts(ytInitialData);
-    
-            assert.lengthOf(posts, 1);
+            
+
+
+            assert.lengthOf(posts, 1, "parsed parent & child post separately");
             const [post] = posts;
+
+
+            console.log(post);
     
-            assert.isUndefined(post.images, "Parsed originalPost's images.");
-            assert.isDefined(post.sharedPost);
+            assert.isUndefined((post as ImageCommunityPost).images, "Parsed originalPost's images.");
+            
+
+            assert.isDefined((post as SharedPostCommunityPost).sharedPost);
     
-            const sharedPost = post.sharedPost!;        
+            const sharedPost = (post as SharedPostCommunityPost).sharedPost;        
             assert.isString(sharedPost.id, "Did not parse shared post's ID");
-            assert.lengthOf(sharedPost.images!, 1);
+            assert.lengthOf((sharedPost as ImageCommunityPost).images, 1);
         });
     });
 
     describe("Video posts tests", () => {
         it("should extract a video", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("video-post.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
+            const [post] = extractCommunityPosts(ytInitialData) as VideoCommunityPost[];
 
             assert.equal(post.attachmentType, AttachmentType.Video);
             
@@ -107,7 +114,7 @@ describe("Community post tests", () => {
 
         it("should extract a members only video", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("mo-video-post.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
+            const [post] = extractCommunityPosts(ytInitialData) as VideoCommunityPost[];
 
             assert.equal(post.attachmentType, AttachmentType.Video);
             assert.isTrue(post.video!.membersOnly);
@@ -115,7 +122,7 @@ describe("Community post tests", () => {
 
         it("should not throw on a deleted video", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("deleted-video-post.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData);
+            const [post] = extractCommunityPosts(ytInitialData) as VideoCommunityPost[];
 
             assert.isUndefined(post.video!.id);
         });
@@ -129,7 +136,7 @@ describe("Community post tests", () => {
 
         it("should not throw on a deleted playlist", () => {
             const ytInitialData = JSON.parse(readFileSync(getPathName("yuuri-unavailable-playlist-post.json")).toString());
-            const [post] = extractCommunityPosts(ytInitialData); 
+            const [post] = extractCommunityPosts(ytInitialData) as PlaylistCommunityPost[]; 
 
             assert.isDefined(post);
             assert.equal(post.attachmentType, AttachmentType.Playlist);
