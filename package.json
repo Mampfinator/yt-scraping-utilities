@@ -10,7 +10,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "prepublish": "tsc",
-    "publish": "np",
+    "publish:np": "np",
     "test": "npx mocha"
   },
   "keywords": [
