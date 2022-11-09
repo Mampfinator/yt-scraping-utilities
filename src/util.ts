@@ -17,8 +17,18 @@ export const playerResponseRe = /(?<=var ytInitialPlayerResponse *\= *)\{.*?}(?=
 
 
 interface ParseRawOptions<D extends boolean, P extends boolean> {
+    /**
+     * the YouTube page body as string.
+     */
     source: string;
+    /**
+     * whether or not to parse and return ytInitialData. 
+     */
     ytInitialData?: D;
+
+    /**
+     * whether or not to parse and return ytInitialPlayerResponse (only present on /watch and youtu.be pages).
+     */
     ytInitialPlayerResponse?: P;
 }
 
@@ -29,9 +39,6 @@ interface ParseRawReturn<D extends boolean, P extends boolean> {
 
 /**
  * Extract raw full objects (`ytInitialData` and `ytInitialPlayerResponse`) from a YT page string.
- * @param options.source - the YouTube page body as string.
- * @param options.ytInitialData - whether or not to parse and return ytInitialData. 
- * @param options.ytInitialPlayerResponse - whether or not to parse and return ytInitialPlayerResponse (only present on /watch and youtu.be pages).
  */
 export function parseRawData<D extends boolean = false, P extends boolean = false>(options: ParseRawOptions<D, P>): ParseRawReturn<D, P> {
     const {
@@ -108,7 +115,7 @@ export const sanitizeUrl = (url: string, offset = 0): string => {
 }
 
 /**
- * Merges runs Arrays into a single text string.
+ * Merges {@linkcode Run} Arrays into a single text string.
  */
 export const mergeRuns = (runs: Run[]) => runs.map(r => r.text).join("");
 
@@ -124,6 +131,9 @@ export const getThumbnail = (thumbnails: Thumbnail[]): string => sanitizeUrl(get
 export const getTextOrMergedRuns = (source: RequireOnlyOne<{runs: Run[], simpleText: string}, "runs" | "simpleText">) => 
     source.simpleText ?? mergeRuns(source.runs);
 
+/**
+ * Utility function used to search ytInitialData for renderers, and transform those into more easily usable types.
+ */
 export function transformYtInitialData<T, U>(source: ytInitialData | string, searchKeys: string[], transformer: (sourceItem: U) => T): T[] {
     if (typeof source !== "object") source = parseRawData({ytInitialData: true, source}).ytInitialData!;
     const items: U[] = findValuesByKeys(source, searchKeys);

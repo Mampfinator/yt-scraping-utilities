@@ -13,7 +13,7 @@ export interface ChannelInfo {
 
 /**
  * Extracts information about the viewed channel from a YouTube page or already parsed ytInitialData. Mainly uses the `channelMetadataRenderer`, or the `microFormatRenderer` if present.
- * @param source - either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post.
+ * @param source either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post.
  */
 export function extractChannelInfo(source: ytInitialData | string): ChannelInfo {
     const ytInitialData : ytInitialData = typeof source === "string" ? parseRawData({source, ytInitialData: true}).ytInitialData! : source;

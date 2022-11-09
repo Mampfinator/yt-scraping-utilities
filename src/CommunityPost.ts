@@ -71,6 +71,9 @@ export interface SharedPostCommunityPost extends BaseCommunityPost {
     sharedPost: CommunityPost;
 }
 
+/**
+ * Represents a community post. Type can be narrowed by checking the post's {@linkcode AttachmentType}.
+ */
 export type CommunityPost = SharedPostCommunityPost | ImageCommunityPost | PollCommunityPost | VideoCommunityPost | PlaylistCommunityPost | TextOnlyCommunityPost;
 
 // NOTE: the order here is important, otherwise the sharedPostRenderer and its original post would appear in separate results.
@@ -133,7 +136,6 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
             sharedPostContent?.runs?.map(runMapper) ?? (sharedPostContent?.simpleText ? {text: sharedPostContent.simpleText} : undefined)
         );
     })();
-
 
     const post: BaseCommunityPost & Record<string, any> = {id, content, attachmentType};
 
@@ -218,7 +220,7 @@ export function extractPost(rawPost: Record<string, any>): CommunityPost {
 
 /**
  * Extracts community posts from a YouTube page or already parsed ytInitialData.
- * @param source - either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post.
+ * @param source either parsed `ytInitialData` via `parseRawData` or raw page string from a community tab or post.
  */
 export function extractCommunityPosts(source: ytInitialData): CommunityPost[]
 export function extractCommunityPosts(source: string): CommunityPost[]

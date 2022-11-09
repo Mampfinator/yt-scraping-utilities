@@ -2,6 +2,9 @@ import { VideoRenderer, VideoRendererStatus } from "./GridVideoRenderer";
 import { getTextOrMergedRuns, transformYtInitialData } from "./util";
 import { ReelItemRenderer, ytInitialData } from "./youtube-types";
 
+/**
+ * Extracts basic information from reels (aka shorts).
+ */
 export function extractReelItemRenderers(source: ytInitialData): VideoRenderer[]
 export function extractReelItemRenderers(source: string): VideoRenderer[]
 export function extractReelItemRenderers(source: string | ytInitialData): VideoRenderer[] {

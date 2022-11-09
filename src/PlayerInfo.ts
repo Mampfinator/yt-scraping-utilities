@@ -1,9 +1,9 @@
 import { getLastItem, sanitizeUrl, tryParseDate, parseRawData } from "./util";
-import {ytInitialPlayerResponse } from "./youtube-types";
+import { ytInitialPlayerResponse } from "./youtube-types";
 
 export enum Playability {
-    OK = "OK",
-    Unplayable = "UNPLAYABLE"
+    Ok = "Ok",
+    Unplayable = "Unplayable"
 } 
 
 export interface VideoFormat {
@@ -80,9 +80,14 @@ export interface PlayerInfo {
     membersOnly: boolean;
 }
 
+const statusLookup = {
+    OK: Playability.Ok,
+    UNPLAYABLE: Playability.Unplayable
+};
+
 /**
  * Extracts info from the player renderer from a `/watch` page or a `youtu.be`.
- * @param source - either parsed `ytPlayerInitialResponse` (via `parseRawData`) or page source string from a player page.
+ * @param source either parsed `ytPlayerInitialResponse` (via `parseRawData`) or page source string from a player page.
  */
 export function extractPlayerInfo(source: ytInitialPlayerResponse): PlayerInfo
 export function extractPlayerInfo(source: string): PlayerInfo
@@ -139,14 +144,14 @@ export function extractPlayerInfo(source: string | ytInitialPlayerResponse): Pla
         title: rawTitle.simpleText,
         length,
         keywords,
-        playability: status,
+        playability: statusLookup[status as "UNPLAYABLE" | "OK"],
         unlisted,
         familySafe,
-        membersOnly: false,
+        membersOnly: errorScreen?.playerLegacyDesktopYpcOfferRenderer.offerId === "sponsors_only_video",
         embeddable,
         isStream: isLiveContent,
         live: false, 
-        hasEnded: false
+        hasEnded: false,
     }
 
     if (streamingData) {
@@ -167,16 +172,6 @@ export function extractPlayerInfo(source: string | ytInitialPlayerResponse): Pla
                     channels: format.channels
                 }
             }));
-        }
-    }
-
-    if (errorScreen?.playerLegacyDesktopYpcOfferRenderer) {
-        const {playerLegacyDesktopYpcOfferRenderer: offer} = errorScreen;
-        
-        switch(offer.offerId) {
-            case "sponsors_only_video":
-                playerInfo.membersOnly = true;
-                break;
         }
     }
 

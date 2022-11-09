@@ -1,5 +1,6 @@
 import { mergeRuns, transformYtInitialData } from "./util";
 import { GridVideoRenderer, ytInitialData } from "./youtube-types";
+import type { extractReelItemRenderers } from "./ReelItemRenderer";
 
 export interface VideoRenderer {
     id: string;
@@ -7,6 +8,11 @@ export interface VideoRenderer {
     status: VideoRendererStatus
 }
 
+
+/**
+ * Extracts basic information about listed videos. 
+ * Note: does **not** extract shorts. See {@linkcode extractReelItemRenderers} instead.
+ */
 export function extractGridVideoRenderers(source: ytInitialData): VideoRenderer[]
 export function extractGridVideoRenderers(source: string): VideoRenderer[]
 export function extractGridVideoRenderers(source: string | ytInitialData): VideoRenderer[]
