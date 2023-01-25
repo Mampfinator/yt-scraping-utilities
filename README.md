@@ -1,16 +1,17 @@
 # yt-scraping-utilities
+
 Assorted scraping utilities for YouTube because some things (like Community Posts) just can't be done with their official API.
 
-```
+```none
 npm install yt-scraping-utilities
 ```
 
-
 ## Usage
+
 Important to note: this package does not do any requests on its own. **You** will have to fetch the data yourself. Keep in mind that YouTube ratelimits are somewhat strict, so keep your requests/minute in moderation; you'll likely be 403'd otherwise.
 
+YouTube doesn't offer an API for community posts, but you can still scrape them fairly easily:
 
-YouTube doesn't offer an API for community posts, but you can still scrape them fairly easily: 
 ```ts
 import { extractCommunityPosts } from "yt-scraping-utilities";
 import axios from "axios";
@@ -28,6 +29,7 @@ import axios from "axios";
 ```
 
 You can also check if a YouTube video is membership locked (you can't, however, find out which tier it's locked behind (yet)):
+
 ```ts
 import { extractPlayerInfo } from "yt-scraping-utilities";
 async function isMembershipVideo(videoId: string): Promise<boolean> {
@@ -39,6 +41,7 @@ async function isMembershipVideo(videoId: string): Promise<boolean> {
 ```
 
 You can also use some of the internally used functions for yourself, if you know what to look for and just need a parser:
+
 ```ts
 import { parseRawData, findActiveTab } from "yt-scraping-utilities";
 

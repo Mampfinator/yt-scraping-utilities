@@ -17,7 +17,7 @@ export function extractGridVideoRenderers(source: ytInitialData): VideoRenderer[
 export function extractGridVideoRenderers(source: string): VideoRenderer[]
 export function extractGridVideoRenderers(source: string | ytInitialData): VideoRenderer[]
 {
-    return transformYtInitialData(source, ["gridVideoRenderer"], extractGridVideoRenderer);
+    return transformYtInitialData(source, ["richItemRenderer"], (source: {content: {videoRenderer: GridVideoRenderer}}) => extractVideoRenderer(source.content.videoRenderer));
 }
 
 export enum VideoRendererStatus {
@@ -36,14 +36,14 @@ const statusLookupTable = {
     LIVE: VideoRendererStatus.Live
 };
 
-export function extractGridVideoRenderer(source: GridVideoRenderer): VideoRenderer {
+export function extractVideoRenderer(source: GridVideoRenderer): VideoRenderer {
     const {videoId, title, thumbnailOverlays} = source;
 
     const status: VideoRendererStatus = (() => {
         const rawStatus = thumbnailOverlays.find(overlay => overlay.thumbnailOverlayTimeStatusRenderer)?.thumbnailOverlayTimeStatusRenderer?.style;
 
         if (!rawStatus) {
-            throw new TypeError(`Could not find matching status for gridVideoRenderer status ${rawStatus}`);
+            throw new TypeError(`Could not find matching status for videoRenderer status ${rawStatus}`);
         }
 
         return statusLookupTable[rawStatus];
